@@ -1,7 +1,11 @@
 # Copyright 2026 The Vigil Authors. Licensed under the Apache License, Version 2.0.
 #
-# Build, lint and test on every push and pull request.
+# Build, lint, test and bundle on every push and pull request.
 # Actions are pinned to commit SHAs (Dependabot keeps them current).
+#
+# One job on purpose: GitHub's Apple Silicon runners are often short of
+# capacity, and a job that waits too long for one is cancelled ("not acquired
+# by Runner"). One macOS runner per push queues far better than several.
 
 name: CI
 
@@ -20,13 +24,14 @@ concurrency:
 
 jobs:
   test:
-    name: Build & test
+    name: Build, test & bundle
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # build number = commit count
 
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
@@ -63,20 +68,6 @@ jobs:
           name: coverage
           path: coverage.txt
           retention-days: 14
-
-  release-build:
-    name: Release build & bundle
-    runs-on: macos-26
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0 # build number = commit count
-
-      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
-        with:
-          xcode-version: latest-stable
 
       - name: Bundle (universal, ad-hoc signed)
         run: make app

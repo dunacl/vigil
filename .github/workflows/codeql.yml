@@ -1,12 +1,11 @@
 # Copyright 2026 The Vigil Authors. Licensed under the Apache License, Version 2.0.
 #
-# CodeQL static analysis of the Swift and C sources, weekly and on main.
+# CodeQL static analysis of the Swift and C sources: weekly and on demand.
+# Not on every push, so it doesn't compete with CI for scarce macOS runners.
 
 name: CodeQL
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:

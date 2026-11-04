@@ -50,6 +50,9 @@ app: ## dist/Vigil.app (universal; SIGN_IDENTITY=... for Developer ID)
 dmg: ## dist/Vigil-<version>.dmg (SIGN_IDENTITY + NOTARY_PROFILE to sign and notarize)
 	scripts/release.sh
 
+screenshots: ## Regenerate the README screenshots (~5 min; panels float over your windows)
+	tools/screenshots/make-screenshots.sh
+
 icon: ## Regenerate assets/AppIcon-1024.png and AppIcon.icns
 	swift tools/make-icon.swift assets/AppIcon-1024.png
 	tools/make-icns.sh
@@ -80,4 +83,4 @@ help: ## List targets
 	    /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } \
 	    /^[a-z-]+:.*## / { printf "  \033[36mmake %-13s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
-.PHONY: build test lint format coverage ci run probe bench app dmg icon perf soak panel-cost windowserver clean distclean help
+.PHONY: build test lint format coverage ci run probe bench app dmg screenshots icon perf soak panel-cost windowserver clean distclean help

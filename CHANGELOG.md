@@ -17,7 +17,6 @@ and the project uses [Semantic Versioning](https://semver.org/).
   release bundle check), tag-triggered signed/notarized release, CodeQL, Dependabot.
 - `Makefile`: `make` lists build, test, lint, coverage, bundle, release and measurement tasks.
 - `VigilUITests`: every panel kind × size rendered empty and with live data.
-- `docs/STATUS.md`: what's done and what's left before the first release.
 - App icon; release pipeline producing a signed, notarized DMG (`scripts/release.sh`).
 - Crash and hang diagnostics saved locally to `~/Library/Logs/Vigil/` (MetricKit; nothing is sent).
 - Panels re-assert their place when the Dock or Finder restarts.

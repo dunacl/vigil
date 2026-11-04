@@ -19,7 +19,6 @@ For larger features, please open an issue to discuss before writing code.
 - macOS 26 or later, Xcode 26 or later.
 - `make` lists every task. `make test` runs the tests; run `make ci` (lint,
   warnings-as-errors build, tests) before opening a pull request — it is what CI runs.
-- What's done and what's pending: [docs/STATUS.md](docs/STATUS.md).
 
 ## Making a change
 

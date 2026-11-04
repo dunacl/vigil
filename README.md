@@ -7,6 +7,8 @@ on your desktop — behind your windows, out of the way, always there when you l
 It's built to be unnoticeable: the default layout uses about **0.1 % of one CPU core
 and under 20 MB of memory**, with no network access and no telemetry.
 
+![Six Vigil panels in Liquid Glass: CPU, Memory, Top Processes, Network, Disk and GPU](assets/screenshots/panels-glass.png)
+
 ## What it shows
 
 | Panel | |
@@ -23,6 +25,8 @@ and under 20 MB of memory**, with no network access and no telemetry.
 
 Every panel comes in three sizes (extra small, small, medium), and a panel turns
 amber or red when something runs hot for a while.
+
+![The CPU panel in medium, small and extra small, next to Thermals, This Mac and extra-small Memory, Network and Disk panels](assets/screenshots/panel-sizes.png)
 
 ## Install
 
@@ -55,6 +59,19 @@ Everything starts from the **gauge icon in the menu bar**.
   graph style, what happens when the pointer is over a panel, update rate, units,
   alert levels, shortcuts, open at login, and hiding panels from screenshots.
 
+### Make it yours
+
+Glass, solid or no background; System, btop or Mono colors; transparency, tint,
+corners and graph style. Set them for every panel at once in Settings, with a
+live preview, or override them per panel.
+
+![The same panels with solid backgrounds and the btop color theme](assets/screenshots/panels-solid-btop.png)
+
+<p align="center">
+  <img src="assets/screenshots/settings-appearance.png" width="480"
+       alt="Settings, Appearance tab: live preview, material, transparency, tint, corners and border">
+</p>
+
 Your layouts are saved in `~/Library/Application Support/Vigil/Layouts/`.
 
 ## Good to know
@@ -78,7 +95,7 @@ Your layouts are saved in `~/Library/Application Support/Vigil/Layouts/`.
 Requires Xcode 26 or later.
 
 ```sh
-git clone <repo-url> vigil && cd vigil
+git clone https://github.com/dunacl/vigil.git && cd vigil
 make                                # list every task
 make test                           # swift test
 make ci                             # what CI checks: lint, warnings-as-errors build, tests
@@ -116,11 +133,10 @@ settings), `--preset NAME`, `--edit`, `--gallery`, `--inspect ID`, `--settings [
 | `Sources/vigil-probe` | Command-line readout and benchmark |
 | `Tests/VigilCoreTests` | Unit tests and integration tests on real hardware |
 | `Tests/VigilUITests` | Smoke tests: every panel in every size and style |
-| `tools/` | Icon generator |
+| `tools/` | Icon generator; `tools/screenshots/` regenerates the README screenshots (`make screenshots`) |
 
 ## Contributing
 
-Project status and what's left before the first release: [docs/STATUS.md](docs/STATUS.md).
 See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
 Security issues: [SECURITY.md](SECURITY.md).
 
