@@ -1,0 +1,13 @@
+# Keeps the SHA-pinned GitHub Actions current. (The package has no
+# third-party Swift dependencies.)
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci

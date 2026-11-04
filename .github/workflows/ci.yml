@@ -1,0 +1,89 @@
+# Copyright 2026 The Vigil Authors. Licensed under the Apache License, Version 2.0.
+#
+# Build, lint and test on every push and pull request.
+# Actions are pinned to commit SHAs (Dependabot keeps them current).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - name: Toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Lint
+        run: make lint
+
+      - name: Build (debug, warnings as errors)
+        run: swift build --build-tests -Xswiftc -warnings-as-errors
+
+      - name: Test with coverage
+        # Integration tests read this VM's real counters; GPU, battery and
+        # sensors are optional there and the tests skip what's missing.
+        run: make coverage
+
+      - name: Coverage summary
+        run: |
+          {
+            echo '### Coverage'
+            echo '```'
+            tail -1 coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: coverage.txt
+          retention-days: 14
+
+  release-build:
+    name: Release build & bundle
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # build number = commit count
+
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - name: Bundle (universal, ad-hoc signed)
+        run: make app
+
+      - name: Check the bundle
+        run: |
+          codesign --verify --deep --strict --verbose=2 dist/Vigil.app
+          codesign --display --verbose=4 dist/Vigil.app 2>&1 | grep -q 'flags=.*runtime' # hardened runtime
+          lipo -archs dist/Vigil.app/Contents/MacOS/Vigil
+          du -sh dist/Vigil.app

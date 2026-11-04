@@ -1,0 +1,41 @@
+name: Bug report
+description: Something isn't working or shows wrong values
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include what you expected instead. Screenshots help.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Vigil version
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. 26.1
+    validations:
+      required: true
+  - type: input
+    id: mac
+    attributes:
+      label: Mac model
+      placeholder: e.g. MacBook Air M2, 16 GB
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Displays, desktops (Spaces), panel layout or anything else relevant

@@ -1,0 +1,54 @@
+# --- Project ---
+# Working specification, kept local
+SPEC.md
+docs/
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Xcode ---
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+DerivedData/
+build/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcresult
+
+# --- Swift Package Manager ---
+.build/
+.swiftpm/
+Packages/
+Package.resolved.bak
+
+# --- Distribution artifacts ---
+*.dmg
+*.app
+*.zip
+dist/
+
+# --- Instruments / profiling ---
+*.trace
+
+# --- Editors ---
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Secrets / local config ---
+*.p12
+*.mobileprovision
+*.provisionprofile
+.env
+Local.xcconfig

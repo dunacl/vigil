@@ -1,0 +1,100 @@
+# Copyright 2026 The Vigil Authors. Licensed under the Apache License, Version 2.0.
+#
+# Pushing a tag like v0.1.0 builds, signs, notarizes and publishes a DMG as a
+# draft GitHub release. Without the signing secrets it publishes an ad-hoc
+# signed DMG instead (fine for testing; Gatekeeper blocks it on other Macs).
+#
+# Secrets (Settings → Secrets and variables → Actions), all optional together:
+#   DEVELOPER_ID_P12           base64 of the "Developer ID Application" certificate + key (.p12)
+#   DEVELOPER_ID_P12_PASSWORD  its export password
+#   DEVELOPER_ID_IDENTITY      e.g. "Developer ID Application: Name (TEAMID)"
+#   NOTARY_APPLE_ID, NOTARY_TEAM_ID, NOTARY_PASSWORD (app-specific password)
+#
+# Releases run in the "release" environment, so they can require approval.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: release
+    permissions:
+      contents: write # create the GitHub release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+
+      - name: Check the tag matches CHANGELOG.md
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=${TAG#v}
+          grep -q "^## \[$version\]" CHANGELOG.md || { echo "::error::CHANGELOG.md has no [$version] section"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Import the signing certificate
+        env:
+          P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          IDENTITY: ${{ secrets.DEVELOPER_ID_IDENTITY }}
+          APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          if [[ -z "$P12" ]]; then
+            echo "::warning::No signing secrets: publishing an ad-hoc signed build."
+            exit 0
+          fi
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password=$(openssl rand -hex 24)
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          echo "$P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+          if [[ -n "$APPLE_ID" ]]; then
+            xcrun notarytool store-credentials vigil --apple-id "$APPLE_ID" --team-id "$TEAM_ID" \
+              --password "$NOTARY_PASSWORD" --keychain "$keychain"
+            echo "NOTARY_PROFILE=vigil" >> "$GITHUB_ENV"
+            echo "NOTARY_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+          fi
+
+      - name: Test, bundle, sign, notarize
+        run: scripts/release.sh
+
+      - name: Checksum
+        run: |
+          cd dist
+          shasum -a 256 "Vigil-$VERSION.dmg" | tee "Vigil-$VERSION.dmg.sha256"
+
+      - name: Draft the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Release notes: this version's CHANGELOG.md section.
+          awk -v v="$VERSION" '$0 ~ "^## \\[" v "\\]" {on=1; next} /^## \[/ {on=0} on' CHANGELOG.md > notes.md
+          gh release create "$TAG" --draft --verify-tag --title "Vigil $VERSION" --notes-file notes.md \
+            "dist/Vigil-$VERSION.dmg" "dist/Vigil-$VERSION.dmg.sha256"
+
+      - name: Remove the signing keychain
+        if: always()
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true

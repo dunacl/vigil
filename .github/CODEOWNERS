@@ -1,0 +1,7 @@
+# Code owners are automatically requested for review on pull requests.
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# TODO: replace the placeholder below with a GitHub username or team,
+# then uncomment the line.
+#
+# *    @OWNER
