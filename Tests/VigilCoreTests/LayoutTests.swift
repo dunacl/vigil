@@ -36,7 +36,8 @@ import Testing
     @Test func centerOffsetsArePositiveRightAndDown() throws {
         let resolved = try #require(PlacementResolver.resolve(placement(.center, x: 10, y: 20), screens: [laptop]))
         #expect(resolved.frame.midX == 720 + 10)
-        #expect(resolved.frame.midY == 70 + 805.0 / 2 - 20)
+        let expectedMidY: Double = 70 + 805.0 / 2 - 20
+        #expect(resolved.frame.midY == expectedMidY)
     }
 
     @Test func allNineAnchorsLandInsideTheVisibleFrame() throws {

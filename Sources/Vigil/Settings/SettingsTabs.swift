@@ -67,14 +67,16 @@ private struct LaunchAtLoginToggle: View {
     @State private var error: String?
 
     var body: some View {
-        Toggle("Open Vigil at login", isOn: Binding(get: { status == .enabled }, set: set))
+        Toggle("Open Vigil at login", isOn: Binding(get: { status == .enabled }, set: { setEnabled($0) }))
         if status == .requiresApproval {
             Text("Allow Vigil in System Settings → General → Login Items.").font(.caption).foregroundStyle(.secondary)
         }
         if let error { Text(error).font(.caption).foregroundStyle(.red) }
     }
 
-    private func set(_ enabled: Bool) {
+    // Wrapped in a closure above: passing this method directly as the Binding
+    // setter crashes Swift 6.3's IRGen (isolated(any) reabstraction thunk).
+    private func setEnabled(_ enabled: Bool) {
         do {
             if enabled {
                 try SMAppService.mainApp.register()
